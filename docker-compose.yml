@@ -1,0 +1,46 @@
+version: '3.8'
+services:
+  php:
+    build:
+      context: ./docker/php
+    volumes:
+      - './app:/var/www/html'
+    networks:
+      - my_network
+    depends_on:
+      - mysql
+
+  nginx:
+    image: nginx:latest
+    ports:
+      - 80:80
+    volumes:
+      - './app:/var/www/html'
+      - './docker/nginx/conf.d:/etc/nginx/conf.d'
+    networks:
+      - my_network
+    depends_on:
+      - php
+
+  mysql:
+    image: mysql:8
+    env_file:
+      - .env
+    volumes:
+      - './docker/volume/mysql:/var/lib/mysql'
+    networks:
+      - my_network
+
+  phpmyadmin:
+    image: phpmyadmin
+    ports:
+      - 1500:80
+    environment:
+      - PMA_HOST=mysql
+    networks:
+      - my_network
+    depends_on:
+      - mysql
+
+networks:
+  my_network:
